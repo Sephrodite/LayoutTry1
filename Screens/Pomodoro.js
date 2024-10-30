@@ -15,7 +15,7 @@ function Pomodoro() {
         let interval = setInterval(() => {
             setTimer(lastTimerCount => {
                 if (lastTimerCount == 0) {
-                    <Ionicons name="checkmark-circle-outline" size={33} color={color} />
+                    
                 } else {
                     lastTimerCount <= 1 && clearInterval(interval)
                     return lastTimerCount - 1
