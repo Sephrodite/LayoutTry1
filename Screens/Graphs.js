@@ -7,7 +7,7 @@ function Graphs() {
     const data3 = [{ value: 15, label: 1 }, { value: 30, label: 2 }, { value: 26, label: 3 }, { value: 40, label: 4 }];
     return (
         <>
-            <ScrollView style={styles.graphContainer}>
+            <View style={styles.graphContainer}>
                 <View>
                     <LineChart
                         data={data1}
@@ -32,7 +32,7 @@ function Graphs() {
                         HHb (microM)
                     </Text>
                 </View>
-            </ScrollView>
+            </View>
         </>
     );
 }

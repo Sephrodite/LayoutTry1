@@ -1,7 +1,10 @@
-import { StyleSheet, View, Text, TextInput, Modal } from "react-native";
+import { StyleSheet, View, Text, TextInput, Modal, Button } from "react-native";
 import { useState, useEffect } from 'react';
 import { PieChart } from "react-native-gifted-charts";
 import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import Slider from '@react-native-community/slider';
+
 
 function Pomodoro() {
     const pieData = [
@@ -9,25 +12,62 @@ function Pomodoro() {
         { value: 40, color: '#79D2DE' },
         { value: 20, color: '#ED6665' },
     ];
-    const [timerCount, setTimer] = useState(60)
+
+    const [restTime, setRestTime] = useState(5)
+    const [restLeft, setRestLeft] = useState()
+
+    const [workTime, setWorkTime] = useState(10)
+    const [workLeft, setWorkLeft] = useState()
+
+    const [roundsNum, setRoundsNum] = useState(2)
+    const [roundsLeft, setRoundsLeft] = useState()
+
+    const [isRunning, setIsRunning] = useState(true)
+
+    const set = () => {
+        setRoundsLeft(roundsNum)
+        setWorkLeft(workTime)
+        setRestLeft(restTime)
+        setIsRunning(true)
+    }
 
     useEffect(() => {
-        let interval = setInterval(() => {
-            setTimer(lastTimerCount => {
-                if (lastTimerCount == 0) {
-                    
-                } else {
-                    lastTimerCount <= 1 && clearInterval(interval)
-                    return lastTimerCount - 1
+        let timer = null;
+        let timer1 = null;
+
+        if (isRunning && roundsLeft > 0) {
+
+            if (workLeft > 0) {
+                timer = setTimeout(() => {
+                    setWorkLeft(workLeft - 1);
+                }, 1000);
+            }
+            else if (restLeft > 0) {
+                timer1 = setTimeout(() => {
+                    setRestLeft(restLeft - 1);
+                }, 1000);
+            }
+            else {
+                if (roundsLeft > 1) {
+                    // Restart the countdown for the next repetition
+                    setRoundsLeft(roundsLeft - 1);
+                    setWorkLeft(parseInt(workTime));
+                    setRestLeft(parseInt(restTime));
                 }
-            })
-        }, 1000) 
-        return () => clearInterval(interval)
-    }, []);
+                else {
+                    // Stop the timer when all repetitions are done
+                    setIsRunning(false);
+                }
+            }
+        }
+
+        // Clean up the timer when the component unmounts or updates
+        return () => clearTimeout(timer, timer1);
+    }, [isRunning, roundsLeft, workLeft, restLeft]);
 
     return (
-
-        <View style={styles.inputContainer}>
+        <>
+            <View style={styles.inputContainer}>
             <PieChart
                 donut
                 textColor="black"
@@ -36,11 +76,51 @@ function Pomodoro() {
                 innerRadius={130}
                 data={pieData}
                 centerLabelComponent={() => {
-                    return <Text style={{ fontSize: 30 }}>{timerCount}</Text>;
+                    return <Text style={{ fontSize: 30 }}>{workLeft}</Text>;
                 }}
             />
-            <Text>Pomodoro here</Text>
+            <Text>{roundsLeft} is roundsLeft</Text>
+            <Text>{workLeft} is workLeft</Text>
+            <Text>{restLeft} is restLeft</Text>
+            <Button title={'set'} onPress={set} />
         </View>
+            <View style={styles.slider}>
+                <View>
+                    <Text>Work: {workTime} minutes</Text>
+                    <Slider
+                        minimumValue={1}
+                        maximumValue={90}
+                        step={1}
+                        value={workTime}
+                        onValueChange={(value) => setWorkTime(value)}
+                    />
+                </View>
+                <View>
+                    <Text>Rest: {restTime} minutes</Text>
+                    <Slider
+                        minimumValue={1}
+                        maximumValue={30}
+                        step={1}
+                        value={restTime}
+                        onValueChange={(value) => setRestTime(value)}
+                    />
+                </View>
+                <View>
+                    <Text>Rounds: {roundsNum}</Text>
+                    <Slider
+                        minimumValue={1}
+                        maximumValue={25}
+                        step={1}
+                        value={roundsNum}
+                        onValueChange={(value) => setRoundsNum(value)}
+                    />
+                </View>
+                <View>
+                    <Button title={'Start'} />
+                </View>
+            </View>
+
+        </>
     )
 }
 
@@ -51,5 +131,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-evenly',
         alignItems: 'center',
+    },
+    slider: {
+        padding: 30,
+        flex: 1,
+        alignContent: 'center',
+        justifyContent: 'space-evenly'
     }
 })
