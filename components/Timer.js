@@ -27,6 +27,22 @@ function Timer(props) {
         setIsRunning(true)
     }
 
+    // Prepend `0` for one digit numbers. For that the number has to be
+    // converted to string, as numbers don't have length method
+    const padTime = time => {
+        return String(time).length === 1 ? `0${time}` : `${time}`;
+    };
+
+    const format = time => {
+        // Convert seconds into minutes and take the whole part
+        const minutes = Math.floor(time / 60);
+
+        // Get the seconds left after converting minutes
+        const seconds = time % 60;
+
+        //Return combined values as string in format mm:ss
+        return `${minutes}:${padTime(seconds)}`;
+    };
 
 
     useEffect(() => {
@@ -74,7 +90,7 @@ function Timer(props) {
                 innerRadius={130}
                 data={pieData}
                 centerLabelComponent={() => {
-                    return <Text style={{ fontSize: 30 }}>{workLeft}</Text>;
+                    return <Text style={{ fontSize: 30 }}>{format(counter)}</Text>;
                 }}
             />
             <Text>{roundsLeft} is roundsLeft</Text>
@@ -86,12 +102,3 @@ function Timer(props) {
 }
 
 export default Timer;
-
-const styles = StyleSheet.create({
-    inputContainer: {
-        flex: 1,
-        justifyContent: 'space-evenly',
-        alignItems: 'center',
-    }
-})
-
