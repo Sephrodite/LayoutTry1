@@ -4,10 +4,12 @@ import { PieChart } from "react-native-gifted-charts";
 import { Ionicons } from '@expo/vector-icons';
 import React from "react";
 import Slider from '@react-native-community/slider';
+import { Audio } from 'expo-av';
+import { colours } from "../assets/colours";
 
 const PieData = ([
-    { value: 100, color: 'tomato' },    // Decreasing slice
-    { value: 0, color: 'skyblue' },          // Static slice
+    { value: 100, color: colours.colors.countpos },    // Decreasing slice
+    { value: 0, color: colours.colors.countneg },          // Static slice
 ]);
 
 function Pomodoro() {
@@ -23,9 +25,21 @@ function Pomodoro() {
     const [isRunning, setIsRunning] = useState(false)
     const [modalVisible, setModalVisible] = useState(false)
     const [pieData, setPieData] = useState([
-        { value: 100, color: 'tomato' },
-        { value: 0, color: 'skyblue' }
+        { value: 100, color: colours.colors.countpos },
+        { value: 0, color: colours.colors.countneg }
     ])
+
+    const [sound, setSound] = useState();
+
+    async function playSound() {
+        console.log('Loading Sound');
+        const { sound } = await Audio.Sound.createAsync(require('../assets/voice lines/male_work_US.mp3')
+        );
+        setSound(sound);
+
+        console.log('Playing Sound');
+        await sound.playAsync();
+    }
 
     const startTimer = () => {
         setRoundsLeft(roundsNum)
@@ -59,11 +73,27 @@ function Pomodoro() {
     };
 
     useEffect(() => {
+        Audio.setAudioModeAsync({
+            staysActiveInBackground: true,
+            playsInSilentModeIOS: true,
+            shouldDuckAndroid: true,
+            playThroughEarpieceAndroid: true,
+        });
+        return sound
+            ? () => {
+                console.log('Unloading Sound');
+                sound.unloadAsync();
+            }
+            : undefined;
+    }, [sound]);
+
+    useEffect(() => {
         let timer = null;
         let timer1 = null;
 
         if (isRunning && roundsLeft > 0) {
-            if (workLeft > 0) {
+            if(workLeft === workTime){
+                playSound(sound)
                 timer = setTimeout(() => {
                     setWorkLeft(workLeft - 1)
 
@@ -71,8 +101,37 @@ function Pomodoro() {
                     const leftovers = 100 - percentage
 
                     setPieData([
-                        { value: percentage, color: 'tomato' },    // Decreasing slice
-                        { value: leftovers, color: 'skyblue' },          // Static slices
+                        { value: percentage, color: colours.colors.countpos },    // Decreasing slice
+                        { value: leftovers, color: colours.colors.countneg },          // Static slices
+                    ]);
+                }, 1000);
+            }
+            else if (workLeft > 0) {
+                timer = setTimeout(() => {
+                    setWorkLeft(workLeft - 1)
+
+                    const percentage = ((workLeft - 1) / parseInt(workTime * 60)) * 100;
+                    const leftovers = 100 - percentage
+
+                    setPieData([
+                        { value: percentage, color: colours.colors.countpos },    // Decreasing slice
+                        { value: leftovers, color: colours.colors.countneg },          // Static slices
+                    ]);
+                }, 1000);
+
+
+            }
+            else if (restLeft === restTime) {
+                playSound()
+                timer1 = setTimeout(() => {
+                    setRestLeft(restLeft - 1)
+
+                    const percentage = ((restLeft - 1) / parseInt(restTime * 60)) * 100;
+                    const leftovers = 100 - percentage
+
+                    setPieData([
+                        { value: percentage, color: colours.colors.countres },    // Decreasing slice
+                        { value: leftovers, color: colours.colors.countneg },          // Static slice
                     ]);
                 }, 1000);
 
@@ -85,8 +144,8 @@ function Pomodoro() {
                     const leftovers = 100 - percentage
 
                     setPieData([
-                        { value: percentage, color: 'lightblue' },    // Decreasing slice
-                        { value: leftovers, color: 'skyblue' },          // Static slice
+                        { value: percentage, color: colours.colors.countres },    // Decreasing slice
+                        { value: leftovers, color: colours.colors.countneg },          // Static slice
                     ]);
                 }, 1000);
 
@@ -122,7 +181,7 @@ function Pomodoro() {
                         innerRadius={130}
                         data={pieData}
                         centerLabelComponent={() => {
-                            if (workLeft === workTime){
+                            if (workLeft === workTime) {
                                 return <Text style={{ fontSize: 30 }}>{format(workTime)}</Text>;
                             }
                             else if (workLeft > 0) {
@@ -186,11 +245,13 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-evenly',
         alignItems: 'center',
+        backgroundColor: colours.colors.bglight,
     },
     slider: {
         padding: 30,
         flex: 1,
         alignContent: 'center',
-        justifyContent: 'space-evenly'
+        justifyContent: 'space-evenly',
+        color: colours.colors.countpos,
     }
 })

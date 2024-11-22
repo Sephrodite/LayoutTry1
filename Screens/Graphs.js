@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ScrollView } from "react-native"
 import { LineChart } from "react-native-gifted-charts";
+import { colours } from "../assets/colours";
 
 function Graphs() {
     const data1 = [{ value: 15, label: 1 }, { value: 30, label: 2 }, { value: 26, label: 3 }, { value: 40, label: 4 }];
@@ -44,6 +45,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 16,
         alignContent: 'space-between',
-        justifyContent: 'space-evenly'
+        justifyContent: 'space-evenly',
+        backgroundColor: colours.colors.bglight,
     }
 })
